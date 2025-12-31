@@ -1,0 +1,19 @@
+# C build artifacts
+*.o
+*.out
+a.out
+*.exe
+
+# build directories
+build/
+bin/
+
+# debugger artifacts
+*.dSYM
+core
+
+# VS Code
+.vscode/
+
+# OS junk
+.DS_Store
