@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Stack Visualizer</title>
+
+  <style>
+    :root{
+      --bg:#f8fafc;
+      --fg:#0f172a;
+      --muted:#64748b;
+      --border:#e2e8f0;
+      --panel:#ffffff;
+
+      --brand:#4338ca;
+      --brand2:#5b21b6;
+
+      --blue:#2563eb;
+      --green:#16a34a;
+      --red:#dc2626;
+      --amber:#f59e0b;
+
+      --fp:#2563eb;   /* FP blue */
+      --sp:#f59e0b;   /* SP yellow */
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:var(--bg);
+      color:var(--fg);
+    }
+
+    /* top bar */
+    header{
+      height:58px;
+      padding:0 16px;
+      background: linear-gradient(90deg, var(--brand2), var(--brand));
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+
+    .leftbar{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:260px;
+    }
+
+    .home{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      color:#fff;
+      text-decoration:none;
+      font-weight:700;
+      opacity:0.92;
+    }
+    .home:hover{ opacity:1; }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:900;
+      letter-spacing:0.2px;
+    }
+    .brand .badge{
+      width:26px;height:26px;border-radius:8px;
+      background: rgba(255,255,255,0.18);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;
+    }
+
+    .rightbar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .field{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color: rgba(255,255,255,0.92);
+    }
+
+    select, button{
+      font-size:12px;
+      padding:7px 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.10);
+      color:#fff;
+      outline:none;
+    }
+
+    select option{ color:#0f172a; }
+
+    .pill{
+      font-size:12px;
+      padding:7px 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.10);
+      color:#fff;
+      font-weight:800;
+      user-select:none;
+    }
+
+    .btn{
+      cursor:pointer;
+      font-weight:800;
+      border-color:transparent;
+    }
+
+    #run{
+      background: rgba(255,255,255,0.14);
+      border:1px solid rgba(255,255,255,0.18);
+    }
+
+    #new_code{
+      background: rgba(37,99,235,0.95);
+      border-color: transparent;
+    }
+
+    #status{
+      font-size:12px;
+      color: rgba(255,255,255,0.92);
+      white-space:nowrap;
+    }
+
+    /* layout */
+    main{
+      padding:16px;
+      padding-bottom:86px; /* room for bottom controls */
+      display:grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap:14px;
+      align-items:start;
+    }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      box-shadow:0 1px 10px rgba(2,6,23,0.04);
+      overflow:hidden;
+    }
+
+    .hd{
+      padding:12px 14px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      font-weight:900;
+      font-size:13px;
+    }
+
+    .bd{ padding:12px 14px; }
+
+    textarea{
+      width:100%;
+      min-height:260px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:12px;
+      outline:none;
+      resize:vertical;
+      background:#fff;
+    }
+
+    .mini{
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .check{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      user-select:none;
+    }
+
+    .kvRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+
+    .kvBox{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      background:#fff;
+    }
+
+    .kvBox .k{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:6px;
+    }
+
+    .kvBox .v{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:12px;
+      color:#111827;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .instrLine{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      background:#fff;
+      margin-bottom:12px;
+    }
+
+    .instrLine .k{ color:var(--muted); font-size:12px; font-weight:900; margin-bottom:6px; }
+    .instrLine .v{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:12px; }
+
+    .scroll{
+      max-height:320px;
+      overflow:auto;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:12px;
+    }
+
+    th, td{
+      padding:9px 10px;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+      vertical-align:top;
+    }
+
+    th{
+      position:sticky;
+      top:0;
+      z-index:1;
+      background:#fff;
+      color:var(--muted);
+      font-weight:900;
+      font-size:11px;
+    }
+
+    tr.active{ background: rgba(37,99,235,0.10); }
+    tr.exec{ background: rgba(245,158,11,0.18); }
+
+    .dot{
+      width:9px;height:9px;border-radius:999px;
+      display:inline-block;
+      background: rgba(37,99,235,0.65);
+    }
+    .dot.exec{ background: rgba(245,158,11,0.85); }
+
+    .reg-changed{ color: var(--red); font-weight:900; }
+
+    /* ✅ FP/SP arrows */
+    .marker{
+      display:inline-block;
+      width:16px;
+      text-align:center;
+      font-weight:900;
+      line-height:1;
+    }
+    .marker.fp{ color: var(--fp); }
+    .marker.sp{ color: var(--sp); }
+
+    /* bottom controls */
+    .bottomBar{
+      position:fixed;
+      left:0; right:0; bottom:0;
+      background:#fff;
+      border-top:1px solid var(--border);
+      padding:10px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      z-index:50;
+    }
+
+    .bottomWrap{
+      width:min(980px, 100%);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .btnRow{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .ctl{
+      border:1px solid transparent;
+      border-radius:10px;
+      padding:8px 12px;
+      font-weight:900;
+      color:#fff;
+      cursor:pointer;
+      opacity:0.92;
+      transition:opacity 120ms ease, transform 120ms ease;
+    }
+    .ctl:hover{ opacity:1; transform: translateY(-1px); }
+    .ctl:disabled{ opacity:0.35; transform:none; cursor:not-allowed; }
+
+    /* ✅ only 3 buttons now */
+    #prev_btn{ background: rgba(220,38,38,0.90); }
+    #next_btn{ background: rgba(22,163,74,0.90); }
+    #reset_btn{ background: rgba(148,163,184,0.95); color:#0f172a; }
+
+    .stepInfo{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .stepInfo input{
+      width:90px;
+      padding:7px 10px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      background:#fff;
+      color:var(--fg);
+      font-size:12px;
+    }
+
+    details summary{
+      cursor:pointer;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    pre{
+      margin:10px 0 0;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-size:11px;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
+      max-height:260px;
+      overflow:auto;
+      color:#0f172a;
+    }
+
+    @media (max-width: 1100px){
+      main{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="leftbar">
+      <a class="home" href="./index.html">⌂ <span>Home</span></a>
+      <div class="brand">
+        <img
+          src="./assets/logo.png"
+          alt="Logo"
+          style="width:18px; height:18px;"
+        />
+        <div>Stack Visualizer</div>
+      </div>
+    </div>
+
+    <div class="rightbar">
+      <div class="field">
+        <span style="font-weight:900;">Architecture:</span>
+        <select id="arch_select">
+          <option value="x86_64">x86_64</option>
+          <option value="arm64" selected>arm64</option>
+        </select>
+      </div>
+
+      <!-- removed dropdown; forced text -->
+      <div class="field">
+        <span style="font-weight:900;">mode:</span>
+        <span class="pill">assembly</span>
+      </div>
+
+      <select id="examples" title="examples">
+        <option value="">examples</option>
+
+        <optgroup label="arm64">
+            <option value="arm64_overwrite">arm64: overwrite same slot</option>
+            <option value="arm64_three_locals">arm64: 3 locals (-4,-8,-12)</option>
+            <option value="arm64_saved_lr_fp_and_locals">arm64: saved fp/lr + locals</option>
+            <option value="arm64_big_stack_frame">arm64: bigger stack frame (0x30)</option>
+            <option value="arm64_sparse_offsets">arm64: sparse offsets (-4,-16,-28)</option>
+        </optgroup>
+
+        <optgroup label="x86_64">
+            <option value="x64_three_locals">x86_64: 3 locals (-4,-8,-12)</option>
+            <option value="x64_overwrite">x86_64: overwrite same slot</option>
+            <option value="x64_big_stack_frame">x86_64: bigger stack frame (0x40)</option>
+            <option value="x64_sparse_offsets">x86_64: sparse offsets (-4,-0x20,-0x3c)</option>
+            <option value="x64_many_locals">x86_64: many locals</option>
+        </optgroup>
+        </select>
+
+      <button id="new_code" class="btn">New Code</button>
+      <button id="run" class="btn">Run Code</button>
+      <span id="status">ready</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Code -->
+    <section class="panel">
+      <div class="hd">Code</div>
+      <div class="bd">
+        <textarea id="code" spellcheck="false"></textarea>
+      </div>
+    </section>
+
+    <!-- Supported Instructions -->
+    <section class="panel">
+    <div class="hd">Supported Instructions</div>
+    <div class="bd">
+        <div class="mini" style="margin-bottom:10px;">
+        This visualizer supports a small teaching subset (changes based on architecture).
+        </div>
+
+        <pre id="supported_text" style="
+        margin:0;
+        white-space:pre-wrap;
+        word-break:break-word;
+        font-size:11px;
+        background:#fff;
+        border:1px solid var(--border);
+        border-radius:12px;
+        padding:10px;
+        max-height:220px;
+        overflow:auto;
+        color:#0f172a;
+        "></pre>
+    </div>
+    </section>
+
+
+    <!-- Current Step -->
+    <section class="panel">
+      <div class="hd">Current Step</div>
+      <div class="bd">
+        <div class="instrLine">
+          <div class="k">Instr</div>
+          <div class="v" id="v_instr">-</div>
+        </div>
+
+        <div class="kvRow">
+          <div class="kvBox">
+            <div class="k"><span id="k_fp">RBP</span><span></span></div>
+            <div class="v" id="v_fp">-</div>
+          </div>
+          <div class="kvBox">
+            <div class="k"><span id="k_sp">RSP</span><span></span></div>
+            <div class="v" id="v_sp">-</div>
+          </div>
+        </div>
+
+        <div class="mini" style="margin-top:10px;">
+          <label class="check">
+            <input id="relative_sp" type="checkbox" />
+            Relative to sp
+          </label>
+
+          <details style="margin-left:auto;">
+            <summary>raw json</summary>
+            <pre id="out"></pre>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Instructions -->
+    <section class="panel">
+      <div class="hd">
+        <span>Instructions</span>
+        <label class="check"><input id="autoscroll_instr" type="checkbox" checked /> autoscroll</label>
+      </div>
+      <div class="bd">
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:54px;">Row</th>
+                <th style="width:120px;">Address</th>
+                <th>Instruction</th>
+              </tr>
+            </thead>
+            <tbody id="instrTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stack Content -->
+    <section class="panel">
+      <div class="hd">
+        <span>Stack Content</span>
+        <span style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;">
+          <span><span class="dot"></span> current</span>
+          <span><span class="dot exec"></span> wrote</span>
+          <span style="margin-left:6px;">
+            <span class="marker fp">▶</span> FP
+            <span style="margin-left:8px;" class="marker sp">▶</span> SP
+          </span>
+        </span>
+      </div>
+      <div class="bd">
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:26px;"></th>   <!-- FP/SP arrow -->
+                <th style="width:26px;"></th>   <!-- current/wrote dot -->
+                <th style="width:160px;">Address</th>
+                <th style="width:90px;">Off</th>
+                <th style="width:160px;">Value</th>
+                <th>Label</th>
+              </tr>
+            </thead>
+            <tbody id="stackTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Register Contents -->
+    <section class="panel">
+      <div class="hd">Register Contents</div>
+      <div class="bd">
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:90px;">reg</th>
+                <th>value</th>
+              </tr>
+            </thead>
+            <tbody id="regTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Controls: Prev / Next / Reset  -->
+  <div class="bottomBar">
+    <div class="bottomWrap">
+      <div class="btnRow">
+        <button id="prev_btn" class="ctl">Prev</button>
+        <button id="next_btn" class="ctl">Next</button>
+        <button id="reset_btn" class="ctl">Reset</button>
+      </div>
+
+      <div class="stepInfo">
+        <span>Step:</span>
+        <input id="step" type="number" value="0" />
+        <span>of <span id="stepMax">0</span></span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
