@@ -83,9 +83,9 @@ Copy code
 
 ## ⚙️ Build (Engine)
 
-
+```bash
 make
-
+```
 This compiles the C engine and generates the WebAssembly module.
 
 📦 Deployment
