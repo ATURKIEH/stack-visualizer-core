@@ -1,4 +1,11 @@
-# Assembly Stack Visualizer
+# 🧠 Assembly Stack Visualizer
+
+![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
+![ARM64](https://img.shields.io/badge/ARM64-supported-blue.svg)
+![x86_64](https://img.shields.io/badge/x86__64-supported-blue.svg)
+![Web](https://img.shields.io/badge/Web-WASM-purple.svg)
+![Status](https://img.shields.io/badge/Status-Active-success.svg)
+![C](https://img.shields.io/badge/C-A8B9CC?style=flat&logo=c&logoColor=black)
 
 An interactive, browser-based tool to **visualize stack behavior in assembly programs**.
 Designed for students and low-level programmers learning how stack frames, registers,
