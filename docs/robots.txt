@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aturkieh.github.io/stack-visualizer-core/sitemap.xml
